@@ -1,6 +1,20 @@
-
-
 using Identity_Server.Extensions;
+using Identity_Server.Services;
+using Serilog;
+using Serilog.Events;
+
+
+#region Configure logging(serilog)
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console(LogEventLevel.Debug)
+    .CreateLogger();
+
+#endregion
+
+Log.Information("Loging Configured Successfully");
+
+
 
 var builder = WebApplication.CreateBuilder();
 
@@ -12,8 +26,20 @@ builder.Services.AddAuthenticationServices(builder.Configuration);
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddSingleton<IEmailSender, SMTPEmailSender>();
+
+builder.Services.AddHttpClient("MailTrapApiClient", (services, client) =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["MailtrapSettings:ApiBaseUrl"]);
+    client.DefaultRequestHeaders.Add("Api-Token", builder.Configuration["MailtrapSettings:ApiToken"]);
+});
+
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSerilog();
 
 var app = builder.Build();
 
@@ -23,6 +49,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseSerilogRequestLogging();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

@@ -1,6 +1,5 @@
 ﻿using Identity_Server.Persistence.Sql_Server;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Identity_Server.Extensions;
 
