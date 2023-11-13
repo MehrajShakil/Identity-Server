@@ -1,6 +1,6 @@
 ﻿using Identity_Server.Entities;
 
-namespace Identity_Server.Services;
+namespace Identity_Server.Interfaces;
 
 public interface IEmailSender
 {

@@ -1,7 +1,7 @@
 ﻿using Identity_Server.Entities;
 using Newtonsoft.Json;
 
-namespace Identity_Server.Services;
+namespace Identity_Server.Interfaces;
 
 public class MailtrapAPIEmailSender : IEmailSender
 {

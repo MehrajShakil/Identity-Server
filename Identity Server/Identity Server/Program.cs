@@ -1,4 +1,5 @@
 using Identity_Server.Extensions;
+using Identity_Server.Interfaces;
 using Identity_Server.Services;
 using Serilog;
 using Serilog.Events;
@@ -26,7 +27,7 @@ builder.Services.AddAuthenticationServices(builder.Configuration);
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddSingleton<IEmailSender, SMTPEmailSender>();
+builder.Services.AddSingleton<IEmailSender, MailtrapSMTPEmailSender>();
 
 builder.Services.AddHttpClient("MailTrapApiClient", (services, client) =>
 {

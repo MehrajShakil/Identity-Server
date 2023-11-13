@@ -1,14 +1,15 @@
 ﻿using Identity_Server.Entities;
+using Identity_Server.Interfaces;
 using MailKit.Net.Smtp;
 using MimeKit;
 
 namespace Identity_Server.Services;
 
-public class SMTPEmailSender : IEmailSender
+public class MailtrapSMTPEmailSender : IEmailSender
 {
     private readonly IConfiguration configuration;
 
-    public SMTPEmailSender(IConfiguration configuration)
+    public MailtrapSMTPEmailSender(IConfiguration configuration)
     {
         this.configuration = configuration;
     }
