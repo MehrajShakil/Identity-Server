@@ -1,27 +1,28 @@
 ﻿using Identity_Server.DTOs;
 using Identity_Server.Entities;
+using Identity_Server.Identity_Wrapper_Services;
 using Identity_Server.Interfaces;
 using Microsoft.AspNetCore.Identity;
 
 namespace Identity_Server.Services;
 
-public class AccountServices : IAccountService
+public class AccountService : IAccountService
 {
 
     #region Fields
 
-    private readonly UserManager<IdentityUser<int>> userManager;
-    private readonly SignInManager<IdentityUser<int>> signInManager;
-    private readonly ILogger<AccountServices> logger;
+    private readonly UserManagerWrapper<IdentityUser<int>> userManager;
+    private readonly SigninManagerWrapper<IdentityUser<int>> signInManager;
+    private readonly ILogger<AccountService> logger;
     private readonly IEmailSender emailSender;
 
     #endregion
 
     #region Injecting services
 
-    public AccountServices(UserManager<IdentityUser<int>> userManager,
-                           SignInManager<IdentityUser<int>> signInManager,
-                           ILogger<AccountServices> logger,
+    public AccountService(UserManagerWrapper<IdentityUser<int>> userManager,
+                           SigninManagerWrapper<IdentityUser<int>> signInManager,
+                           ILogger<AccountService> logger,
                            IEmailSender emailSender)
     {
         this.userManager = userManager;
@@ -33,11 +34,38 @@ public class AccountServices : IAccountService
     #endregion
 
 
-    public async Task<UserLoginResponse> LoginAsync(UserLoginRequest user)
+    public async Task<UserLoginResponse> LoginAsync(UserLoginRequest userRequest)
     {
-        throw new NotImplementedException();
+        var user = new IdentityUser<int>()
+        {
+            Email = userRequest.Email
+        };
+
+        UserLoginResponse response = new();
+
+        bool accountVerified = await signInManager.CanSignInAsync(user);
+        if (!accountVerified)
+        {
+            response.StatusCode = "401";
+            response.Message = "Your account is not verified. Please verify your account for Login.";
+            return response;
+        }
+
+        SignInResult canLogIn =  await signInManager.CheckPasswordSignInAsync(user, userRequest.Password, false);
+
+        if (!canLogIn.Succeeded)
+        {
+            response.StatusCode = "401";
+            response.Message = "Failed to SignIn";
+            return response;
+        }
+
+        response.Message = "Successfully SignIn!";
+
+        return response;
     }
 
+    
     public async Task<UserRegistrationResponse> RegisterUserAsync(UserRegistrationRequest userRegistrationRequest)
     {
         var user = new IdentityUser<int>

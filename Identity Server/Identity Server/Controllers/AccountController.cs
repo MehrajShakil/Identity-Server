@@ -1,4 +1,5 @@
 ﻿using Identity_Server.DTOs;
+using Identity_Server.Helpers;
 using Identity_Server.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,33 +8,43 @@ namespace Identity_Server.Controllers;
 
 public class AccountController : BaseController
 {
+
+    #region Fields
+
     private readonly IAccountService accountService;
+
+    #endregion
+
+    #region Injecting Services
 
     public AccountController(IAccountService accountService)
 	{
         this.accountService = accountService;
     }
 
+    #endregion
+
+
     [AllowAnonymous]
     [HttpPost("Register")]
     public async Task<IActionResult> Register(UserRegistrationRequest userRequest)
     {
-        var response = await accountService.RegisterUserAsync(userRequest);
-        
-        ///TODO:: need to handle the return type for status code.
+        UserRegistrationResponse response = await accountService.RegisterUserAsync(userRequest);
 
-        return Ok(response);
+        return ActionResutlHelper
+            .ReturnActionResult(response, response.StatusCode);
     }
+
+    
 
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLoginRequest userRequest)
     {
-        var response = await accountService.LoginAsync(userRequest);
+        UserLoginResponse response = await accountService.LoginAsync(userRequest);
 
-        ///TODO:: need to handle the return type for status code 
-
-        return Ok(response);
+        return ActionResutlHelper
+            .ReturnActionResult(response, response.StatusCode);
     }
 
 }
