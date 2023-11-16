@@ -24,16 +24,12 @@ builder.Services.AddControllers();
 builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddIdentityServices(builder.Configuration);
 builder.Services.AddAuthenticationServices(builder.Configuration);
+builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddSingleton<IEmailSender, MailtrapSMTPEmailSender>();
 
-builder.Services.AddHttpClient("MailTrapApiClient", (services, client) =>
-{
-    client.BaseAddress = new Uri(builder.Configuration["MailtrapSettings:ApiBaseUrl"]);
-    client.DefaultRequestHeaders.Add("Api-Token", builder.Configuration["MailtrapSettings:ApiToken"]);
-});
+
 
 
 
