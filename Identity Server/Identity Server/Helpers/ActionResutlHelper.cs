@@ -4,13 +4,13 @@ namespace Identity_Server.Helpers
 {
     public static class ActionResutlHelper
     {
-        public static IActionResult ReturnActionResult<TResponse>(TResponse response, string statusCode) where TResponse : class
+        public static IActionResult ReturnActionResult<TResponse>(TResponse response, int statusCode) where TResponse : class
         {
             switch (statusCode)
             {
-                case "401":
+                case 401:
                     return new UnauthorizedObjectResult(response);
-                case "409":
+                case 409:
                     return new ConflictObjectResult(response);
                 default:
                     return new OkObjectResult(response);

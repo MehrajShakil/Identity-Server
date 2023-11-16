@@ -3,6 +3,7 @@ using Identity_Server.Entities;
 using Identity_Server.Identity_Wrapper_Services;
 using Identity_Server.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using System.Net.Mail;
 
 namespace Identity_Server.Services;
 
@@ -46,7 +47,7 @@ public class AccountService : IAccountService
         bool accountVerified = await signInManager.CanSignInAsync(user);
         if (!accountVerified)
         {
-            response.StatusCode = "401";
+            response.StatusCode = 401;
             response.Message = "Your account is not verified. Please verify your account for Login.";
             return response;
         }
@@ -55,7 +56,7 @@ public class AccountService : IAccountService
 
         if (!canLogIn.Succeeded)
         {
-            response.StatusCode = "401";
+            response.StatusCode = 401;
             response.Message = "Failed to SignIn";
             return response;
         }
@@ -96,7 +97,7 @@ public class AccountService : IAccountService
         {
             foreach (var error in userCreated.Errors)
             {
-                response.StatusCode = error.Code;
+                response.StatusCode = 401;
                 response.Message = error.Description;
                 logger.LogError($"Status Code: {error.Code}, Message: {error.Description}");
             }
@@ -104,9 +105,11 @@ public class AccountService : IAccountService
             return response;
         }
 
-        MailData mailData = GenerateEmailConfirmatinMail(userRegistrationRequest);
 
-        var confirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var confirmationUrl =  await GenerateConfirmationUrl(user);
+
+        MailData mailData = GenerateEmailConfirmatinMail(userRegistrationRequest, confirmationUrl);
+
 
         var sendMail = await emailSender.SendEmailAsync(mailData);
 
@@ -122,14 +125,36 @@ public class AccountService : IAccountService
         return response;
     }
 
-    private static MailData GenerateEmailConfirmatinMail(UserRegistrationRequest userRegistrationRequest)
+    public async Task<UserConfirmationEmailResponse> ConfirmEmailAsync(string token, string email)
+    {
+         var user = await userManager.FindByEmailAsync(email);
+        if(user is null)
+        {
+            return new UserConfirmationEmailResponse { Message = "User is not found!"};
+        }
+        IdentityResult confirmEmail = await userManager.ConfirmEmailAsync(user, token);
+        if (!confirmEmail.Succeeded)
+        {
+            return new UserConfirmationEmailResponse { Message = "Failed to Confirm Email."};
+        }
+        return new UserConfirmationEmailResponse { Message = "Confirmation Successfull."};
+    }
+
+    private async Task<string> GenerateConfirmationUrl(IdentityUser<int> user)
+    {
+        var confirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
+        var encodedEmail = System.Web.HttpUtility.UrlEncode(user.Email);
+        string url = $"{"clientUrl"}/confirmEmail?token={confirmationToken}&email={encodedEmail}";
+        return url;
+    }
+
+    private static MailData GenerateEmailConfirmatinMail(UserRegistrationRequest userRegistrationRequest, string confirmationUrl)
     {
         return new MailData
         {
-            Sender = "identity@gmail.com",
-            Receiver = userRegistrationRequest.Email,
+            ReceiverEmail = userRegistrationRequest.Email,
             Subject = "Email Confirmation",
-            Body = "Hi Please confirm your mail"
+            Body = $"Please Follow the link to confirm your account: {confirmationUrl}"
         };
     }
 }

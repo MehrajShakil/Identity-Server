@@ -10,7 +10,13 @@ public static class AddIdentityServicesExtension
 {
     public static void AddIdentityServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddIdentity<IdentityUser<int>, IdentityRole<int>>()
+        services.AddIdentity<IdentityUser<int>, IdentityRole<int>>(options =>
+        {
+            options.User = new UserOptions
+            {
+                RequireUniqueEmail = true
+            };
+        })
             .AddUserManager<UserManagerWrapper<IdentityUser<int>>>()
             .AddSignInManager<SigninManagerWrapper<IdentityUser<int>>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()

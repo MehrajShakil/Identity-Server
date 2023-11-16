@@ -21,8 +21,8 @@ public class MailtrapSMTPEmailSender : IEmailSender
 
             using(MimeMessage emailMessage = new MimeMessage())
             {
-                var from = new MailboxAddress("sisakilcste18", "identity@twitter.com");
-                var to = new MailboxAddress(mailData.Receiver, mailData.Receiver);
+                var from = new MailboxAddress("twitter", configuration["LocalMailSettings:SenderEmail"]);
+                var to = new MailboxAddress(mailData.ReceiverEmail, mailData.ReceiverEmail);
 
                 emailMessage.From.Add(from);
                 emailMessage.To.Add(to);
@@ -36,8 +36,8 @@ public class MailtrapSMTPEmailSender : IEmailSender
 
                 using(var smtpClient = new SmtpClient())
                 {
-                    await smtpClient.ConnectAsync(configuration["MailtrapSettings:SMTP:Server"], 587, MailKit.Security.SecureSocketOptions.StartTls);
-                    await smtpClient.AuthenticateAsync(configuration["MailtrapSettings:SMTP:UserName"], configuration["MailtrapSettings:SMTP:Password"]);
+                    await smtpClient.ConnectAsync(configuration["LocalMailSettings:Server"], 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await smtpClient.AuthenticateAsync(configuration["LocalMailSettings:SenderEmail"], configuration["LocalMailSettings:Password"]);
                     await smtpClient.SendAsync(emailMessage);
                     await smtpClient.DisconnectAsync(true);
                 }

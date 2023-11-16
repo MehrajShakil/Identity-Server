@@ -35,7 +35,18 @@ public class AccountController : BaseController
             .ReturnActionResult(response, response.StatusCode);
     }
 
-    
+    [AllowAnonymous]
+    [HttpPost("confirmEmail")]
+    public async Task<IActionResult> ConfirmEmail(string token, string email)
+    {
+        string decodedEmail = System.Net.WebUtility.UrlDecode(email);
+
+        UserConfirmationEmailResponse response = await accountService.ConfirmEmailAsync(token, decodedEmail);
+
+        return ActionResutlHelper
+            .ReturnActionResult(response, response.StatusCode);
+    }
+
 
     [AllowAnonymous]
     [HttpPost("login")]
@@ -46,5 +57,4 @@ public class AccountController : BaseController
         return ActionResutlHelper
             .ReturnActionResult(response, response.StatusCode);
     }
-
 }

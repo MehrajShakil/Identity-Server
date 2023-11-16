@@ -20,8 +20,8 @@ public class MailtrapAPIEmailSender : IEmailSender
 
         var apiMail = new
         {
-            From = new {Email = mailData.Sender, Name = mailData.Sender},
-            To = new { Email = mailData.Receiver, Name = mailData.Receiver },
+            From = new {Email = mailData.SenderEmail, Name = mailData.SenderEmail },
+            To = new { Email = mailData.ReceiverEmail, Name = mailData.ReceiverEmail },
             Subject = mailData.Subject,
             Text = mailData.Body
         };
@@ -36,8 +36,6 @@ public class MailtrapAPIEmailSender : IEmailSender
             if ((bool)res) return true;
             return false;
         }
-
         return false;
-
     }
 }
