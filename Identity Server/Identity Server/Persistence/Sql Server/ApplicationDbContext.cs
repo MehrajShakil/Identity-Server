@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Identity_Server.Entities;
+using Identity_Server.Extensions;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Identity_Server.Persistence.Sql_Server;
 
-public class ApplicationDbContext : IdentityDbContext<IdentityUser<int>, IdentityRole<int>, int>
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationUserRole, string>
 {
 	public ApplicationDbContext(DbContextOptions options) : base(options)
 	{

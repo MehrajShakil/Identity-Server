@@ -14,5 +14,7 @@ public static class AddApplicationServicesExtension
         });
 
         services.AddSingleton<IEmailSender, MailtrapSMTPEmailSender>();
+        services.AddScoped<IAccountService, AccountService>();
+
     }
 }

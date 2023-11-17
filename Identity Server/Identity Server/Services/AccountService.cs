@@ -1,9 +1,12 @@
 ﻿using Identity_Server.DTOs;
 using Identity_Server.Entities;
+using Identity_Server.Extensions;
 using Identity_Server.Identity_Wrapper_Services;
 using Identity_Server.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using System.Net.Mail;
+using System.Security.Claims;
 
 namespace Identity_Server.Services;
 
@@ -12,24 +15,30 @@ public class AccountService : IAccountService
 
     #region Fields
 
-    private readonly UserManagerWrapper<IdentityUser<int>> userManager;
-    private readonly SigninManagerWrapper<IdentityUser<int>> signInManager;
+    private readonly UserManagerWrapper<ApplicationUser> userManager;
+    private readonly SigninManagerWrapper<ApplicationUser> signInManager;
+    private readonly RoleManagerWrapper<ApplicationUserRole> roleManager;
     private readonly ILogger<AccountService> logger;
     private readonly IEmailSender emailSender;
+    private readonly IJwtTokenProvider jwtTokenProvider;
 
     #endregion
 
     #region Injecting services
 
-    public AccountService(UserManagerWrapper<IdentityUser<int>> userManager,
-                           SigninManagerWrapper<IdentityUser<int>> signInManager,
+    public AccountService(UserManagerWrapper<ApplicationUser> userManager,
+                           SigninManagerWrapper<ApplicationUser> signInManager,
                            ILogger<AccountService> logger,
-                           IEmailSender emailSender)
+                           IEmailSender emailSender,
+                           IJwtTokenProvider jwtTokenProvider,
+                           RoleManagerWrapper<ApplicationUserRole> roleManager)
     {
         this.userManager = userManager;
         this.signInManager = signInManager;
         this.logger = logger;
         this.emailSender = emailSender;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.roleManager = roleManager;
     }
 
     #endregion
@@ -37,10 +46,8 @@ public class AccountService : IAccountService
 
     public async Task<UserLoginResponse> LoginAsync(UserLoginRequest userRequest)
     {
-        var user = new IdentityUser<int>()
-        {
-            Email = userRequest.Email
-        };
+
+        var user = await userManager.FindByEmailAsync(userRequest.Email);
 
         UserLoginResponse response = new();
 
@@ -61,15 +68,18 @@ public class AccountService : IAccountService
             return response;
         }
 
-        response.Message = "Successfully SignIn!";
+        var claims = await userManager.GetClaimsAsync(user) as List<Claim>;
 
+        response.AccessKey = jwtTokenProvider.GetJwtToken(claims);
+
+        response.Message = "Successfully SignIn!";
         return response;
     }
 
     
     public async Task<UserRegistrationResponse> RegisterUserAsync(UserRegistrationRequest userRegistrationRequest)
     {
-        var user = new IdentityUser<int>
+        var user = new ApplicationUser
         {
             UserName = userRegistrationRequest.UserName,
             Email = userRegistrationRequest.Email
@@ -140,7 +150,7 @@ public class AccountService : IAccountService
         return new UserConfirmationEmailResponse { Message = "Confirmation Successfull."};
     }
 
-    private async Task<string> GenerateConfirmationUrl(IdentityUser<int> user)
+    private async Task<string> GenerateConfirmationUrl(ApplicationUser user)
     {
         var confirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedEmail = System.Web.HttpUtility.UrlEncode(user.Email);

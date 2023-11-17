@@ -1,6 +1,5 @@
+using Identity_Server.Entities;
 using Identity_Server.Extensions;
-using Identity_Server.Interfaces;
-using Identity_Server.Services;
 using Serilog;
 using Serilog.Events;
 
