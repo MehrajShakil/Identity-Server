@@ -20,7 +20,8 @@ public static class AddIdentityServicesExtension
             .AddUserManager<UserManagerWrapper<IdentityUser<int>>>()
             .AddSignInManager<SigninManagerWrapper<IdentityUser<int>>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddApiEndpoints();
 
         services.AddScoped<IAccountService, AccountService>();
     }
