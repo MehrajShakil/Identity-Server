@@ -4,6 +4,8 @@ namespace Identity_Server.Interfaces
 {
     public interface IJwtTokenProvider
     {
-        string GetJwtToken(List<Claim> claims);
+        List<Claim> GetClaimsFromAccessToken(string token);
+        string GetJwtAccessToken(List<Claim> claims);
+        string GetJwtRefreshToken();
     }
 }

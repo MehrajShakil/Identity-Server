@@ -1,7 +1,12 @@
-﻿namespace Identity_Server.DTOs;
+﻿using System.Security.Claims;
 
-public sealed class UserLoginResponse : ResponseBase
+namespace Identity_Server.DTOs;
+
+public sealed class UserLoginResponse(string email) : ResponseBase
 {
-    public string AccessKey { get; set; }
-    public string RefreshKey { get; set; }
+    public string UserName { get; set; } = string.Empty;
+    public string Email { get; set; } = email;
+    public string AccessToken { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public List<Claim> Claims { get; set; } = new();
 }

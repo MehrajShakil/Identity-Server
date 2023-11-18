@@ -16,8 +16,8 @@ public static class AddIdentityServicesExtension
                 RequireUniqueEmail = true
             };
         })
-            .AddUserManager<UserManagerWrapper<ApplicationUser>>()
-            .AddSignInManager<SigninManagerWrapper<ApplicationUser>>()
+            .AddUserManager<UserManagerWrapper>()
+            .AddSignInManager<SigninManagerWrapper>()
             .AddRoleManager<RoleManagerWrapper<ApplicationUserRole>>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
