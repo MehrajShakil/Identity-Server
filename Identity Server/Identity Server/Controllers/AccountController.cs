@@ -47,7 +47,6 @@ public class AccountController : BaseController
             .ReturnActionResult(response, response.StatusCode);
     }
 
-
     [AllowAnonymous]
     [HttpPost("login")]
     public async Task<IActionResult> Login(UserLoginRequest userRequest)
@@ -57,4 +56,15 @@ public class AccountController : BaseController
         return ActionResutlHelper
             .ReturnActionResult(response, response.StatusCode);
     }
+
+    [AllowAnonymous]
+    [HttpGet("refreshToken")]
+    public async Task<IActionResult> GetAccessTokenByRefreshToken(UserRefreshTokenRequest userRefreshTokenRequest)
+    {
+        UserRefreshTokenResponse response = await accountService.GetAccessTokenByRefreshToken(userRefreshTokenRequest);
+
+        return ActionResutlHelper
+            .ReturnActionResult(response, response.StatusCode);
+    }
+
 }

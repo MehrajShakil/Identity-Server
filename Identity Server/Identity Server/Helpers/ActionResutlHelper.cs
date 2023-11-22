@@ -12,6 +12,8 @@ namespace Identity_Server.Helpers
                     return new UnauthorizedObjectResult(response);
                 case 409:
                     return new ConflictObjectResult(response);
+                case 502:
+                    return new ObjectResult(response) { StatusCode = statusCode };
                 default:
                     return new OkObjectResult(response);
             }

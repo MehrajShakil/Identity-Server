@@ -2,6 +2,9 @@
 
 public static class Account
 {
+
+    public const string UserNotFound = "User is not found";
+
     public static class LogInMessages
     {
         public const string LogInSuccess = "Successfully LogIn";

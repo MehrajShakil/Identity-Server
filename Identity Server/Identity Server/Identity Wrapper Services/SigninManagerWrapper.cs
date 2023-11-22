@@ -19,7 +19,10 @@ public class SigninManagerWrapper : SignInManager<ApplicationUser>
 
     public async Task<UserLoginResponse> LoginAsync(UserLoginRequest userRequest)
     {
-        UserLoginResponse response = new(userRequest.Email);
+        UserLoginResponse response = new()
+        {
+            Email = userRequest.Email
+        };
 
         var user = await userManager.FindByEmailAsync(userRequest.Email);
         if (user is null)
@@ -45,13 +48,11 @@ public class SigninManagerWrapper : SignInManager<ApplicationUser>
             response.Messages = new List<string> { Account.LogInMessages.WrongCredentials };
             return response;
         }
-        else
-        {
-            response.UserName = user.UserName;
-            response.StatusCode = StatusCode.Succeeded;
-            response.Messages = new List<string> { Account.LogInMessages.LogInSuccess };
-            response.Claims = await userManager.GetClaimsAsync(user) as List<Claim> ?? new List<Claim>();
-        }
+
+        response.UserName = user.UserName;
+        response.StatusCode = StatusCode.Succeeded;
+        response.Messages = new List<string> { Account.LogInMessages.LogInSuccess };
+        response.Claims = await userManager.GetClaimsAsync(user) as List<Claim> ?? new List<Claim>();
 
         return response;
     }

@@ -1,4 +1,5 @@
-﻿using Identity_Server.Constants;
+﻿using System.Security.Claims;
+using Identity_Server.Constants;
 using Identity_Server.DTOs;
 using Identity_Server.Entities;
 using Identity_Server.Extensions;
@@ -58,6 +59,14 @@ public class AccountService : IAccountService
             response.Claims = new();
         }
 
+        var dbUser = await userManager.FindByEmailAsync(userRequest.Email);
+        if (dbUser is not null)
+        {
+            dbUser.RefreshToken = response.RefreshToken;
+            dbUser.RefreshTokenExpires = DateTime.Now;
+            await userManager.UpdateAsync(dbUser);
+        }
+
         return response;
     }
     
@@ -78,7 +87,10 @@ public class AccountService : IAccountService
 
         var confirmationUrl =  await GenerateEmailConfirmationUrl(user);
 
-        MailData mailData = GenerateEmailConfirmatinMailData(userRegistrationRequest, confirmationUrl);
+        var body = $"Please Follow the link to confirm your account: {confirmationUrl}";
+        var subject = "Email confirmation";
+
+        MailData mailData = GenerateEmailConfirmationMailData(userRegistrationRequest.Email, subject, body);
 
         var sendMail = await emailSender.SendEmailAsync(mailData);
 
@@ -109,22 +121,92 @@ public class AccountService : IAccountService
         return new UserConfirmationEmailResponse { Messages = new List<string> { "Confirmation Successfull." } };
     }
 
+    public async Task<UserRefreshTokenResponse> GetAccessTokenByRefreshToken(UserRefreshTokenRequest userRefreshTokenRequest)
+    {
+        UserRefreshTokenResponse response = new();
+        var user = await userManager.FindByEmailAsync(userRefreshTokenRequest.Email);
+        if (user is null)
+        {
+            response.StatusCode = StatusCode.Unauthorized;
+            response.Messages = new List<string> { Account.UserNotFound };
+            return response;
+        }
+
+        if (user.CanRefreshToken(userRefreshTokenRequest.RefreshToken))
+        {
+            response.StatusCode = StatusCode.Succeeded;
+            response.AccessToken = jwtTokenProvider.GetJwtAccessToken(new List<Claim>());
+            response.RefreshToken = jwtTokenProvider.GetJwtRefreshToken();
+            response.RefreshTokenExpires = DateTime.Now;
+            user.RefreshToken = response.RefreshToken;
+            user.RefreshTokenExpires = response.RefreshTokenExpires;
+            await userManager.UpdateAsync(user);
+        }
+        else
+        {
+            response.StatusCode = StatusCode.Unauthorized;
+            response.Messages = new List<string> { "Revoked" };
+        }
+
+        return response;
+    }
+
+    public async Task<UserResetPasswordResponse> ResetUserPassword(UserResetPasswordRequest userResetPasswordRequest)
+    {
+        UserResetPasswordResponse response = new();
+        var user = await userManager.FindByEmailAsync(userResetPasswordRequest.Email);
+
+        if (user is null)
+        {
+            response.StatusCode = StatusCode.Unauthorized;
+            response.Messages = [Account.UserNotFound]; 
+            return response;
+        }
+
+        var confirmationUrl = await GenerateResetPasswordEmailConfirmationUrl(user);
+        var body= $"Please click into the following link to reset your password: {confirmationUrl}";
+        var subject = "Reset Password Email Confirmation";
+        var mailData = GenerateEmailConfirmationMailData(user.Email, subject, body);
+
+        if (await emailSender.SendEmailAsync(mailData))
+        {
+            response.StatusCode = StatusCode.Succeeded;
+            response.Messages = ["Please check your email to confirm your email address and reset your password"];
+        }
+        else
+        {
+            response.StatusCode = StatusCode.BadGateWay;
+            response.Messages = [Account.EmailSendingMessages.Failed];
+        }
+
+        return response;
+    }
 
     private async Task<string> GenerateEmailConfirmationUrl(ApplicationUser user)
     {
         var confirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
         var encodedEmail = System.Web.HttpUtility.UrlEncode(user.Email);
-        string url = $"{configuration["clientUrl"]}/confirmEmail?token={confirmationToken}&email={encodedEmail}";
+        string url = $"{configuration["clientUrl"]}/api/account/confirmEmail?token={confirmationToken}&email={encodedEmail}";
         return url;
     }
 
-    private static MailData GenerateEmailConfirmatinMailData(UserRegistrationRequest userRegistrationRequest, string confirmationUrl)
+    private async Task<string> GenerateResetPasswordEmailConfirmationUrl(ApplicationUser user)
+    {
+        var confirmationToken = await userManager.GeneratePasswordResetTokenAsync(user);
+        var encodedEmail = System.Web.HttpUtility.UrlEncode(user.Email);
+        string url = $"{configuration["clientUrl"]}/api/account/resetPasswordConfirmEmail?token={confirmationToken}&email={encodedEmail}";
+        return url;
+    }
+
+    private static MailData GenerateEmailConfirmationMailData(string email, string subject, string body)
     {
         return new MailData
         {
-            ReceiverEmail = userRegistrationRequest.Email,
-            Subject = "Email Confirmation",
-            Body = $"Please Follow the link to confirm your account: {confirmationUrl}"
+            ReceiverEmail = email,
+            Subject = subject,
+            Body = body
         };
     }
+
+
 }

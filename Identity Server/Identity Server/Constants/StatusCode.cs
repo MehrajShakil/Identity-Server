@@ -5,4 +5,7 @@ public static class StatusCode
     public const int Unauthorized = 401;
     public const int Conflict = 409;
     public const int Succeeded = 200;
+
+    // Server Error
+    public const int BadGateWay = 502;
 }
