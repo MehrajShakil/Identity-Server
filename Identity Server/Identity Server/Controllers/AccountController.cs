@@ -1,6 +1,8 @@
 ﻿using Identity_Server.DTOs;
+using Identity_Server.Entities;
 using Identity_Server.Helpers;
 using Identity_Server.Interfaces;
+using Identity_Server.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,13 +14,15 @@ public class AccountController : BaseController
     #region Fields
 
     private readonly IAccountService accountService;
+    private readonly IEmailSender _emailSender;
 
     #endregion
 
     #region Injecting Services
 
-    public AccountController(IAccountService accountService)
-	{
+    public AccountController(IAccountService accountService, IEmailSender emailSender)
+    {
+        _emailSender = emailSender;
         this.accountService = accountService;
     }
 
@@ -66,5 +70,38 @@ public class AccountController : BaseController
         return ActionResutlHelper
             .ReturnActionResult(response, response.StatusCode);
     }
+
+    [AllowAnonymous]
+    [HttpPost("resetPassword")]
+    public async Task<IActionResult> ResetPassword(UserResetPasswordRequest userResetPasswordRequest)
+    {
+        UserResetPasswordResponse response = await accountService.ResetUserPassword(userResetPasswordRequest);
+
+        return ActionResutlHelper
+            .ReturnActionResult(response, response.StatusCode);
+    }
+
+    [AllowAnonymous]
+    [HttpPost("sendEmail")]
+    public async Task<IActionResult> TestEmailSend(string email, string subject, string body)
+    {
+
+        var mailData = new MailData()
+        {
+            ReceiverEmail = email,
+            Subject = subject,
+            Body = body
+        };
+
+        bool send = await _emailSender.SendEmailAsync(mailData);
+        return Ok();
+    }
+
+    /*[AllowAnonymous]
+    [HttpPost("resetPasswordConfirmEmail")]
+    public async Task<IActionResult> VerifyEmailForResetPassword(string token, string email)
+    {
+
+    }*/
 
 }

@@ -13,7 +13,7 @@ public static class AddApplicationServicesExtension
             client.DefaultRequestHeaders.Add("Api-Token", configuration["MailtrapSettings:ApiToken"]);
         });
 
-        services.AddSingleton<IEmailSender, MailtrapSMTPEmailSender>();
+        services.AddSingleton<IEmailSender, SMTPEmailSender>();
         services.AddScoped<IAccountService, AccountService>();
 
     }

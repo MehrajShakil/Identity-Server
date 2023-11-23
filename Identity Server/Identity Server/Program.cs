@@ -1,4 +1,3 @@
-using Identity_Server.Entities;
 using Identity_Server.Extensions;
 using Serilog;
 using Serilog.Events;

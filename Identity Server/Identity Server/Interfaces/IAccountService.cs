@@ -8,5 +8,6 @@ public interface IAccountService
     Task<UserLoginResponse> LoginAsync(UserLoginRequest user);
     Task<UserConfirmationEmailResponse> ConfirmEmailAsync(string token, string email);
     Task<UserRefreshTokenResponse> GetAccessTokenByRefreshToken(UserRefreshTokenRequest userRefreshTokenRequest);
+    Task<UserResetPasswordResponse> ResetUserPassword(UserResetPasswordRequest userResetPasswordRequest);
 }
 

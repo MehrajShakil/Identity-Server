@@ -182,6 +182,22 @@ public class AccountService : IAccountService
         return response;
     }
 
+    /*
+    public async Task<UserResetPasswordResponse> VerifyEmailForResetPassword(string token, string email)
+    {
+        UserResetPasswordResponse response = new();
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            response.StatusCode = StatusCode.Unauthorized;
+            response.Messages = [Account.UserNotFound];
+            return response;
+        }
+
+        if(await userManager.)
+
+    }*/
+
     private async Task<string> GenerateEmailConfirmationUrl(ApplicationUser user)
     {
         var confirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
